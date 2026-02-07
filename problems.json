@@ -1,0 +1,8 @@
+{
+  "Bronze": [{"id":1000,"title":"A+B"}, {"id":2557,"title":"Hello World"}],
+  "Silver": [{"id":1920,"title":"수 찾기"}],
+  "Gold":   [{"id":1753,"title":"최단경로"}],
+  "Platinum": [],
+  "Diamond": [],
+  "Ruby": []
+}
