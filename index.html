@@ -228,7 +228,7 @@
         </div>
         <div class="muted" style="margin-top:8px;">
           - 보드는 기본적으로 <b>Bronze</b> 문제로 시작합니다. 셀을 점령/빼앗을 때마다 다음 티어로 올라간 문제가 그 칸에 재배정됩니다.<br/>
-          - 풀이 검증은 수작업(백준 검색)이고, 앱은 “클릭 + 확인 버튼”으로 상태만 관리합니다.
+          - 풀이 검증은 수작업(백준 색)이고, 앱은 “클릭 + 확인 버튼”으로 상태만 관리합니다.
         </div>
 
         <div class="hr"></div>
@@ -489,21 +489,36 @@
     };
   }
 
-  function initBoard(){
+  function resetUsedPools(){
+    state.used = {};
+    for(const t of TIERS){
+      state.used[t] = new Set();
+    }
+  }
+
+  async function ensureProblemsLoaded(){
+    if(state.problems && Object.keys(state.problems).length){
+      return;
+    }
+    await autoLoadProblemsIfExists();
+  }
+
+  async function initBoard(){
+    await ensureProblemsLoaded();
     if(!state.problems || Object.keys(state.problems).length === 0){
       alert("먼저 문제셋 JSON을 불러와주세요.");
       return;
     }
 
     // used 초기화 (새 게임이면 중복 없는 랜덤 배정 위해)
-    state.used = {};
-    for(const t of TIERS) state.used[t] = new Set();
+    resetUsedPools();
 
     state.board = [];
     for(let i=0;i<state.size*state.size;i++){
       state.board.push(makeEmptyCell(i));
     }
     pushLog(`보드 ${state.size}×${state.size} 새로 생성(초기 티어: Bronze)`);
+    closeModal();
     renderAll();
     save();
   }
@@ -826,13 +841,13 @@
     await autoLoadProblemsIfExists();
 
     if(!Array.isArray(state.board) || state.board.length !== state.size*state.size){
-      initBoard();
+      await initBoard();
     }
 
     
     if(!loaded){
       // 기본 used 초기화
-      for(const t of TIERS) state.used[t] = new Set();
+      resetUsedPools();
       pushLog("새 세션 시작");
       save();
     }
@@ -866,7 +881,9 @@
       e.target.value = "";
     });
 
-    $("btnInitBoard").addEventListener("click", initBoard);
+    $("btnInitBoard").addEventListener("click", () => {
+      initBoard();
+    });
 
     $("btnExport").addEventListener("click", exportState);
     $("fileImportState").addEventListener("change", (e) => {
@@ -901,5 +918,3 @@
 </script>
 </body>
 </html>
-
-
