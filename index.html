@@ -824,6 +824,11 @@
 
     const loaded = load();
     await autoLoadProblemsIfExists();
+
+    if(!Array.isArray(state.board) || state.board.length !== state.size*state.size){
+      initBoard();
+    }
+
     
     if(!loaded){
       // 기본 used 초기화
@@ -896,4 +901,5 @@
 </script>
 </body>
 </html>
+
 
