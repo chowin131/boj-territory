@@ -418,6 +418,31 @@
     return out;
   }
 
+  async function autoLoadProblemsIfExists(){
+  // 이미 문제셋이 로딩돼 있으면 다시 안 읽음 (수동 업로드도 계속 가능)
+  if(state.problems && Object.keys(state.problems).length) return;
+
+  try{
+    const r = await fetch("problems.json", { cache: "no-store" });
+    if(!r.ok) return;
+
+    const obj = await r.json();
+    state.problems = normalizeProblems(obj);
+
+    // used 보정
+    for(const t of TIERS){
+      if(!state.used[t]) state.used[t] = new Set();
+    }
+
+    pushLog("problems.json 자동 로드 완료");
+    renderPoolStatus();
+    save();
+  }catch(e){
+    // problems.json이 없거나 JSON 파싱 에러면 그냥 무시 (수동 업로드로 진행)
+  }
+}
+
+
   function poolRemaining(tier){
     const pool = state.problems[tier] || [];
     const used = state.used[tier] || new Set();
@@ -786,7 +811,7 @@
   }
 
   // init
-  function boot(){
+  async function boot(){
     // manual tier select
     const sel = $("selManualTier");
     sel.innerHTML = "";
@@ -798,6 +823,8 @@
     }
 
     const loaded = load();
+    await autoLoadProblemsIfExists();
+    
     if(!loaded){
       // 기본 used 초기화
       for(const t of TIERS) state.used[t] = new Set();
@@ -869,3 +896,4 @@
 </script>
 </body>
 </html>
+
